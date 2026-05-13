@@ -33,8 +33,6 @@ function matchesPrefix(pathname: string, prefixes: readonly string[]) {
 
 // Middleware utama
 export default auth((req) => {
-  console.log("MIDDLEWARE ACTIVE");
-
   const { pathname } = req.nextUrl;
   const session = req.auth;
   const isLoggedIn = !!session?.user;
