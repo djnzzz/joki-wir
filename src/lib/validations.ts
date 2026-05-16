@@ -17,7 +17,14 @@ export const createOrderSchema = z.object({
 });
 
 export const updateOrderStatusSchema = z.object({
-  status: z.enum(["CANCELLED", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "DONE"]),
+  status: z.enum([
+    "CANCELLED",
+    "AWAITING",
+    "ASSIGNED",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "DONE",
+  ]),
   note: z.string().max(300).optional(),
 });
 
@@ -39,6 +46,7 @@ export const midtransWebhookSchema = z.object({
   fraud_status: z.string().optional(),
   signature_key: z.string(),
   gross_amount: z.string(),
+  status_code: z.string(),
   payment_type: z.string().optional(),
 });
 
