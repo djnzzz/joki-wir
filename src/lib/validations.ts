@@ -55,8 +55,100 @@ export const assignJokiSchema = z.object({
   jokiId: z.string().cuid(),
 });
 
+export const updateContentSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  body: z.string().min(1).optional(),
+});
+
 // Voucher
 export const validateVoucherSchema = z.object({
   code: z.string().min(1),
   subtotal: z.number().positive(),
 });
+
+export const createVoucherSchema = z
+  .object({
+    code: z
+      .string()
+      .min(3)
+      .max(30)
+      .regex(/^[A-Z0-9_-]+$/, "Kode hanya huruf kapital, angka, - dan _"),
+    type: z.enum(["PERCENTAGE", "FIXED"]),
+    value: z.number().positive(),
+    minOrder: z.number().positive().optional(),
+    maxDiscount: z.number().positive().optional(),
+    usageLimit: z.number().int().positive().optional(),
+    perUserLimit: z.number().int().positive().optional(),
+    startAt: z.string().datetime().optional(),
+    expiredAt: z.string().datetime().optional(),
+  })
+  .refine(
+    (d) => {
+      if (d.type === "PERCENTAGE" && d.value > 100) return false;
+      return true;
+    },
+    { message: "Persentase diskon tidak boleh lebih dari 100%" },
+  );
+
+// Notif
+export const broadcastNotifSchema = z.object({
+  type: z.enum([
+    "ORDER_CREATED",
+    "ORDER_ASSIGNED",
+    "ORDER_PROGRESS",
+    "ORDER_COMPLETED",
+    "ORDER_CANCELLED",
+    "PAYMENT_SUCCESS",
+    "PAYMENT_FAILED",
+    "BROADCAST",
+    "PROMO",
+  ]),
+  title: z.string().min(1).max(100),
+  body: z.string().min(1).max(500),
+  actionUrl: z.string().url().optional(),
+  targetRole: z.enum(["USER", "JOKI", "ALL"]).default("ALL"),
+});
+
+// Profil
+export const updateProfileSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  phone: z
+    .string()
+    .regex(/^08\d{8,11}$/, "Format nomor HP tidak valid")
+    .optional(),
+});
+
+// Game
+export const createGameSchema = z.object({
+  name: z.string().min(2).max(100),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9-]+$/, "Slug hanya boleh huruf kecil, angka, dan tanda -"),
+  description: z.string().max(1000).optional(),
+  note: z.string().max(500).optional(),
+  pillBg: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional(),
+  pillColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional(),
+  sortOrder: z.number().int().min(0).default(0),
+});
+
+export const createServiceSchema = z
+  .object({
+    gameId: z.string().cuid(),
+    category: z.enum(["BOSS_FIGHT", "ITEM_HUNTING", "GRINDING", "NPC_QUEST"]),
+    name: z.string().min(2).max(200),
+    detail: z.string().max(500).optional(),
+    priceUnit: z.number().positive().optional(),
+    priceBundle: z.number().positive().optional(),
+    estimateMin: z.number().int().positive().optional(),
+    estimateMax: z.number().int().positive().optional(),
+    badge: z.enum(["SAVE", "POPULAR", "RARE", "SECRET"]).optional(),
+  })
+  .refine((d) => d.priceUnit || d.priceBundle, {
+    message: "Minimal salah satu harga (satuan atau bundle) harus diisi",
+  });

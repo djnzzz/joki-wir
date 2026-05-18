@@ -423,6 +423,7 @@ model ChatRoom {
   orderId   String           @unique
   isOpen    Boolean          @default(true)
   createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   order     Order            @relation(fields: [orderId], references: [id])
   members   ChatRoomMember[]
