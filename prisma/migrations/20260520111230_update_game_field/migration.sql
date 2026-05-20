@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "games" ALTER COLUMN "description" DROP NOT NULL,
+ALTER COLUMN "pillBg" DROP NOT NULL,
+ALTER COLUMN "pillColor" DROP NOT NULL;

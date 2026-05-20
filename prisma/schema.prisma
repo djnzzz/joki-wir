@@ -163,10 +163,10 @@ model Game {
   id           String    @id @default(cuid())
   name         String
   slug         String    @unique
-  description  String    @db.Text
+  description  String?   @db.Text
   note         String?   // catatan singkat di atas tabel harga
-  pillBg       String    // warna background pill, e.g. "#EEEDFE"
-  pillColor    String    // warna teks pill, e.g. "#3C3489"
+  pillBg       String?   // warna background pill, e.g. "#EEEDFE"
+  pillColor    String?   // warna teks pill, e.g. "#3C3489"
   coverUrl     String?   // gambar cover game
   isActive     Boolean   @default(true)
   sortOrder    Int       @default(0)
@@ -189,8 +189,8 @@ model Service {
   priceUnitLabel   String?         // e.g. "/ set", "/ boss"
   priceBundle      Int?            // harga bundle
   priceBundleLabel String?         // e.g. "Hemat 47%", "all DLC boss"
-  estimateMin      Int             // estimasi minimum dalam menit
-  estimateMax      Int             // estimasi maksimum dalam menit
+  estimateMin      Int?            // estimasi minimum dalam menit
+  estimateMax      Int?            // estimasi maksimum dalam menit
   badge            BadgeType?
   isActive         Boolean         @default(true)
   sortOrder        Int             @default(0)
