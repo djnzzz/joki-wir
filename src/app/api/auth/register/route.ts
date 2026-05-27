@@ -4,6 +4,7 @@ import { randomBytes } from "crypto";
 import prisma from "@/lib/prisma";
 import { badRequest, created, handleError } from "@/lib/api-response";
 import { sendVerificationEmail } from "@/lib/email";
+import { rateLimiters, checkRateLimit } from "@/lib/rate-limit";
 
 // Validasi input register
 const registerSchema = z.object({
@@ -22,6 +23,19 @@ const registerSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: per IP
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      request.headers.get("x-real-ip") ??
+      "unknown";
+
+    const rl = await checkRateLimit(rateLimiters.register, `register:${ip}`);
+    if (!rl.success) {
+      return badRequest(
+        `Terlalu banyak percobaan. Coba lagi dalam ${rl.retryAfter} detik.`,
+      );
+    }
+
     // 1. Parse & validasi body
     const body = await request.json();
     const data = registerSchema.parse(body);

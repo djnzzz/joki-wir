@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import type { Role } from "@prisma/client";
+import { rateLimiters, checkRateLimit } from "@/lib/rate-limit";
 
 // Schema validasi login
 const loginSchema = z.object({
@@ -49,6 +50,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        // Rate limit: per email (lebih presisi dari IP untuk login)
+        const loginEmail = credentials?.email as string;
+        if (loginEmail) {
+          const rl = await checkRateLimit(
+            rateLimiters.login,
+            `login:${loginEmail.toLowerCase()}`,
+          );
+          if (!rl.success) {
+            // Return null = gagal login (NextAuth tidak expose pesan custom ke client)
+            // Frontend akan cek via error code
+            throw new Error("RATE_LIMITED");
+          }
+        }
         // 1. Validasi input
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
@@ -99,6 +113,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.image = user.image ?? null;
       }
 
       // Saat user update profil dari settings
@@ -115,6 +130,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
+        session.user.image = token.image as string | null;
       }
       return session;
     },

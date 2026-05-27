@@ -4,6 +4,7 @@ import { randomBytes } from "crypto";
 import prisma from "@/lib/prisma";
 import { badRequest, handleError, ok } from "@/lib/api-response";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { rateLimiters, checkRateLimit } from "@/lib/rate-limit";
 
 // POST: minta reset password
 // Body: { email }
@@ -11,6 +12,16 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { email } = z.object({ email: z.string().email() }).parse(body);
+
+    // Rate limit: per email (bukan IP — mencegah enumeration + spam)
+    const rl = await checkRateLimit(
+      rateLimiters.resetPassword,
+      `reset:${email}`,
+    );
+    if (!rl.success) {
+      // Tetap return 200 untuk cegah email enumeration
+      return ok({ message: "Jika email terdaftar, link reset sudah dikirim." });
+    }
 
     const user = await prisma.user.findUnique({
       where: { email },

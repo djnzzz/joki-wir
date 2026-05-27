@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { ROUTES } from "@/config/routes";
 
 // Definisi route per akses

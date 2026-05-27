@@ -61,6 +61,7 @@ export const ROUTES = {
       register: "/api/auth/register",
       verifyEmail: "/api/auth/verify-email",
       resetPassword: "/api/auth/reset-password",
+      checkUsername: "/api/auth/check-username",
     },
     games: "/api/games",
     game: (slug: string) => `/api/games/${slug}`,

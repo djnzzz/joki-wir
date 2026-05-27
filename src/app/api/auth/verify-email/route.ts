@@ -1,6 +1,7 @@
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { badRequest, handleError, ok } from "@/lib/api-response";
+import { rateLimiters, checkRateLimit } from "@/lib/rate-limit";
 
 const verifySchema = z.object({
   token: z.string().min(1, "Token tidak valid"),
@@ -11,6 +12,15 @@ const verifySchema = z.object({
 // Dipanggil saat user klik link di email
 export async function GET(request: Request) {
   try {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
+
+    const rl = await checkRateLimit(rateLimiters.verifyEmail, `verify:${ip}`);
+    if (!rl.success) {
+      return badRequest("Terlalu banyak percobaan. Coba lagi nanti.");
+    }
+
     const { searchParams } = new URL(request.url);
     const data = verifySchema.parse({
       token: searchParams.get("token"),
