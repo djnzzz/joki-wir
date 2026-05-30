@@ -1,26 +1,142 @@
+/* ── Google Fonts ── */
+@import url("https://fonts.googleapis.com/css2?family=Bayon&family=Sen:wght@400;700;800&display=swap");
+
 @import "tailwindcss";
 
+/* ── Design Tokens ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colors */
+  --color-bg: #000000;
+  --color-surface-1: #0c0c0c;
+  --color-surface-2: #1e1e1e;
+  --color-surface-3: #292929;
+  --color-border-1: #1e1e1e;
+  --color-border-2: #292929;
+  --color-muted-1: #5b5b5b;
+  --color-muted-2: #7e7d7d;
+  --color-accent: #ffb800;
+  --color-accent-dark: #866100;
+  --color-text: #ffffff;
+  --color-success: #00ff2f;
+  --color-error: #ff0000;
+  --color-info: #0077ff;
+  --color-warning: #ffb800;
+
+  /* Typography */
+  --font-display: "Bayon", sans-serif;
+  --font-body: "Sen", sans-serif;
+
+  /* Shape */
+  --radius-box: 25px;
+  --radius-button: 10px;
+  --radius-toast: 15px;
+  --radius-input: 8px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg);
+  font-family: var(--font-body);
+  color: var(--color-text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar custom (webkit) ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-muted-1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-2);
+}
+
+/* ── Selection ── */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-surface-2);
+}
+
+/* ── Focus visible (accessibility) ── */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ── Utility: font families ── */
+.font-display {
+  font-family: var(--font-display);
+}
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* ── Tailwind v4 theme extension ── */
+@theme {
+  --color-accent: #ffb800;
+  --color-accent-dark: #866100;
+  --color-surface-2: #1e1e1e;
+  --color-surface-3: #292929;
+  --color-muted-1: #5b5b5b;
+  --color-muted-2: #7e7d7d;
+  --color-success: #00ff2f;
+  --color-error: #ff0000;
+  --color-info: #0077ff;
+}
+
+/* ── Responsif Auth Pages ── */
+
+/* Sembunyikan judul vertikal di mobile */
+@media (max-width: 768px) {
+  .vertical-title {
+    display: none !important;
+  }
+}
+
+/* Tablet: stack vertikal */
+@media (max-width: 900px) {
+  /* Grid auth jadi 1 kolom */
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Panel kuning jadi header strip */
+  [style*="background: #FFB800"] {
+    min-height: 160px !important;
+    padding: 24px 32px !important;
+  }
+
+  /* Form padding dikurangi */
+  [style*="padding: 36px 40px"] {
+    padding: 24px 20px !important;
+  }
+}
+
+/* Mobile kecil */
+@media (max-width: 480px) {
+  /* Outer box jadi full screen */
+  [style*="maxWidth: 1100"] {
+    border-radius: 0 !important;
+    border: none !important;
+  }
 }

@@ -70,7 +70,7 @@ export async function sendPasswordResetEmail({
   email: string;
   token: string;
 }) {
-  const url = `${APP_URL}/forgot-password?token=${token}&email=${encodeURIComponent(email)}`;
+  const url = `${APP_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
   const resend = await getResend();
 
   await resend.emails.send({
