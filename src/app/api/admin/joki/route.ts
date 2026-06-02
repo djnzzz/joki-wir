@@ -29,7 +29,16 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return ok(jokiList);
+    return ok({
+      joki: jokiList.map((j) => ({
+        id: j.id,
+        name: j.name,
+        email: j.email,
+        _count: {
+          jokiOrders: j._count.assignedOrders,
+        },
+      })),
+    });
   } catch (error) {
     return handleError(error);
   }

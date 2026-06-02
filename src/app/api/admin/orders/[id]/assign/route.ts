@@ -8,9 +8,10 @@ import { Role, OrderStatus, NotifType } from "@prisma/client";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     // Auth admin
     const session = await requireAdmin();
 
@@ -44,7 +45,7 @@ export async function POST(
 
     // Ambil order
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         chatRoom: true,
       },
@@ -69,7 +70,7 @@ export async function POST(
     const updated = await prisma.$transaction(async (tx) => {
       // Update order
       const updatedOrder = await tx.order.update({
-        where: { id: params.id },
+        where: { id: id },
         data: {
           jokiId,
           status: OrderStatus.ASSIGNED,

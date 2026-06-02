@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { OrderStatus, NotifType, Role } from "@prisma/client";
+import { OrderStatus, Role } from "@prisma/client";
 import { requireAuth } from "@/lib/auth-helpers";
 import {
   ok,
@@ -57,11 +57,69 @@ async function getOrderWithAuth(id: string, userId: string, role: Role) {
   const order = await prisma.order.findUnique({
     where: { id },
     include: {
-      items: { include: { service: true, game: true } },
-      payment: true,
-      progress: { orderBy: { createdAt: "asc" } },
-      review: true,
-      chatRoom: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+
+      joki: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+
+      items: {
+        select: {
+          id: true,
+          serviceName: true,
+          gameName: true,
+          category: true,
+          priceSnapshot: true,
+          quantity: true,
+        },
+      },
+
+      payment: {
+        select: {
+          status: true,
+          amount: true,
+          paidAt: true,
+        },
+      },
+
+      progress: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        include: {
+          joki: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+
+      review: {
+        select: {
+          rating: true,
+          comment: true,
+          isVisible: true,
+          createdAt: true,
+        },
+      },
+
+      chatRoom: {
+        select: {
+          id: true,
+          isOpen: true,
+        },
+      },
     },
   });
   if (!order) return null;
@@ -118,9 +176,30 @@ export async function PATCH(
     }
 
     const updated = await prisma.$transaction(async (tx) => {
+      const statusData: {
+        startedAt?: Date;
+        completedAt?: Date;
+        doneAt?: Date;
+      } = {};
+
+      if (newStatus === "IN_PROGRESS" && !order.startedAt) {
+        statusData.startedAt = new Date();
+      }
+
+      if (newStatus === "COMPLETED" && !order.completedAt) {
+        statusData.completedAt = new Date();
+      }
+
+      if (newStatus === "DONE" && !order.doneAt) {
+        statusData.doneAt = new Date();
+      }
+
       const updatedOrder = await tx.order.update({
         where: { id },
-        data: { status: newStatus },
+        data: {
+          status: newStatus,
+          ...statusData,
+        },
       });
 
       // Notifikasi otomatis per transisi status
