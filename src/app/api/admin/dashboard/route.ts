@@ -97,13 +97,13 @@ export async function GET() {
       // Volume order per hari (30 hari terakhir) — raw query lebih efisien
       prisma.$queryRaw<{ date: string; count: bigint }[]>`
         SELECT 
-          DATE(created_at)::text AS date,
+          DATE("createdAt")::text AS date,
           COUNT(*)::bigint AS count
         FROM orders
         WHERE 
-          created_at >= NOW() - INTERVAL '30 days'
+          "createdAt" >= NOW() - INTERVAL '30 days'
           AND status != 'CANCELLED'
-        GROUP BY DATE(created_at)
+        GROUP BY DATE("createdAt")
         ORDER BY date ASC
       `,
 
@@ -115,7 +115,7 @@ export async function GET() {
         where: {
           role: "JOKI",
           isActive: true,
-          jokiOrders: { some: { status: "IN_PROGRESS" } },
+          assignedOrders: { some: { status: "IN_PROGRESS" } },
         },
       }),
 
