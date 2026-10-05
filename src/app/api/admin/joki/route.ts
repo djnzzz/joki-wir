@@ -34,9 +34,11 @@ export async function GET() {
         id: j.id,
         name: j.name,
         email: j.email,
-        _count: {
-          jokiOrders: j._count.assignedOrders,
-        },
+        phone: j.phone,
+        isActive: j.isActive,
+        isBanned: j.isBanned,
+        createdAt: j.createdAt,
+        _count: { jokiOrders: j._count.assignedOrders },
       })),
     });
   } catch (error) {

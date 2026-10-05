@@ -10,16 +10,22 @@ import {
 } from "@/lib/api-response";
 import { createGameSchema } from "@/lib/validations";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
+export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const auth = await requireAdmin();
     if (!auth.ok) return auth.response;
+    const { id } = await params;
     const game = await prisma.game.findUnique({
-      where: { id: params.id },
-      include: { services: { orderBy: { category: "asc" } } },
+      where: { id },
+      include: {
+        services: {
+          orderBy: { category: "asc" },
+        },
+      },
     });
     if (!game) return notFound();
     return ok(game);
@@ -28,20 +34,18 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
     const auth = await requireAdmin();
     if (!auth.ok) return auth.response;
+    const { id } = await params;
     const body = await req.json();
     const parsed = createGameSchema.partial().safeParse(body);
-    if (!parsed.success)
+    if (!parsed.success) {
       return badRequest("Validasi gagal", parsed.error.flatten());
-
+    }
     const game = await prisma.game.update({
-      where: { id: params.id },
+      where: { id },
       data: parsed.data,
     });
     return ok(game);
@@ -50,19 +54,19 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
     const auth = await requireAdmin();
     if (!auth.ok) return auth.response;
-
-    // Cek apakah game punya order aktif — jangan hapus kalau masih ada
+    const { id } = await params;
     const activeOrders = await prisma.orderItem.count({
       where: {
-        gameId: params.id,
-        order: { status: { notIn: ["DONE", "CANCELLED"] } },
+        gameId: id,
+        order: {
+          status: {
+            notIn: ["DONE", "CANCELLED"],
+          },
+        },
       },
     });
     if (activeOrders > 0) {
@@ -70,10 +74,8 @@ export async function DELETE(
         `Game masih punya ${activeOrders} order aktif. Selesaikan dulu sebelum hapus.`,
       );
     }
-
-    // Soft delete: set isActive = false, bukan hapus dari DB
     await prisma.game.update({
-      where: { id: params.id },
+      where: { id },
       data: { isActive: false },
     });
     return noContent();
